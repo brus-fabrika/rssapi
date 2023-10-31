@@ -17,8 +17,28 @@ import (
 
 // docker run --rm -v "$((Get-Item .).FullName):/src" -w /src sqlc/sqlc generate
 
+type ApiFunc func(w http.ResponseWriter, r *http.Request) error
+type ApiError struct {
+	Error string `json:"error"`
+}
+
+func WriteJson(w http.ResponseWriter, httpStatus int, v any) error {
+	w.WriteHeader(httpStatus)
+	w.Header().Add("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(v)
+}
+
+func makeHttpHandler(fn ApiFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := fn(w, r); err != nil {
+			WriteJson(w, http.StatusBadRequest, ApiError{Error: err.Error()})
+		}
+	}
+}
+
 type apiConfig struct {
-	DB *database.Queries
+	Port string
+	DB   *database.Queries
 }
 
 func main() {
@@ -48,19 +68,41 @@ func main() {
 	log.Println("Database connection established")
 
 	apiCfg := apiConfig{
-		DB: database.New(db),
+		Port: portString,
+		DB:   database.New(db),
 	}
 
-	// Start the server
-	log.Println("Starting server on port", portString)
-	http.HandleFunc("/users/create", apiCfg.handlerCreateUser)
-
-	// start the server
-	http.ListenAndServe(":"+portString, nil)
-
+	apiCfg.Run()
 }
 
-func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) Run() {
+	http.HandleFunc("/users/create", makeHttpHandler(apiCfg.handlerCreateUser))
+	http.HandleFunc("/users", makeHttpHandler(apiCfg.handlerGetUsers))
+
+	// Start the server
+	log.Println("Starting server on port", apiCfg.Port)
+	http.ListenAndServe(":"+apiCfg.Port, nil)
+}
+
+func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+func (apiCfg *apiConfig) handlerGetUsers(w http.ResponseWriter, r *http.Request) error {
+
+	log.Println("Getting all users")
+
+	users, err := apiCfg.DB.GetUsers(r.Context())
+	if err != nil {
+		return err
+	}
+
+	WriteJson(w, http.StatusOK, users)
+
+	return nil
+}
+
+func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) error {
 	type parameters struct {
 		Name string `json:"name"`
 	}
@@ -70,8 +112,7 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return err
 	}
 
 	log.Println("Creating user with name:", params.Name)
@@ -84,10 +125,9 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return err
 	}
 
-	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	WriteJson(w, http.StatusOK, user)
+	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/brus-fabrika/rssapi/internal/database"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
@@ -76,12 +77,33 @@ func main() {
 }
 
 func (apiCfg *apiConfig) Run() {
-	http.HandleFunc("/users/create", makeHttpHandler(apiCfg.handlerCreateUser))
-	http.HandleFunc("/users", makeHttpHandler(apiCfg.handlerGetUsers))
+
+	router := chi.NewRouter()
+	srv := &http.Server{
+		Addr:    ":" + apiCfg.Port,
+		Handler: router,
+	}
+
+	v1Router := chi.NewRouter()
+	v1Router.Get("/status", makeHttpHandler(apiCfg.handlerStatus))
+
+	v1Router.Get("/users", makeHttpHandler(apiCfg.handlerGetUsers))
+	v1Router.Get("/user/:id", makeHttpHandler(apiCfg.handlerGetUserById))
+	v1Router.Post("/users", makeHttpHandler(apiCfg.handlerCreateUser))
+
+	router.Mount("/v1", v1Router)
 
 	// Start the server
 	log.Println("Starting server on port", apiCfg.Port)
-	http.ListenAndServe(":"+apiCfg.Port, nil)
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (apiCfg *apiConfig) handlerStatus(w http.ResponseWriter, r *http.Request) error {
+	return WriteJson(w, http.StatusOK, struct{}{})
 }
 
 func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Request) error {

@@ -93,6 +93,9 @@ func (apiCfg *apiConfig) Run() {
 	v1Router.Get("/feeds", makeHttpHandler(apiCfg.handlerGetFeedByUserId))
 	v1Router.Post("/feed", makeHttpHandler(apiCfg.handlerFeed))
 
+	v1Router.Get("/feeds/follow", makeHttpHandler(apiCfg.handlerGetFeedFollowByUserId))
+	v1Router.Post("/feed/follow", makeHttpHandler(apiCfg.handlerFeedFollow))
+
 	router.Mount("/v1", v1Router)
 
 	// Start the server

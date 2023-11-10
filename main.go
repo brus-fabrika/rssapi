@@ -83,18 +83,18 @@ func (apiCfg *apiConfig) Run() {
 	}
 
 	v1Router := chi.NewRouter()
-	v1Router.Get("/status", makeHttpHandler(apiCfg.handlerStatus))
+	v1Router.Get("/status", makeHttpHandler(apiCfg.logIt(apiCfg.handlerStatus)))
 
-	v1Router.Get("/users", makeHttpHandler(apiCfg.handlerGetUsers))
-	v1Router.Get("/user", makeHttpHandler(apiCfg.middlewareAuth(apiCfg.handlerGetUser)))
-	v1Router.Get("/user/:id", makeHttpHandler(apiCfg.handlerGetUserById))
-	v1Router.Post("/user", makeHttpHandler(apiCfg.handlerCreateUser))
+	v1Router.Get("/users", makeHttpHandler(apiCfg.logIt(apiCfg.handlerGetUsers)))
+	v1Router.Get("/user", makeHttpHandler(apiCfg.logIt(apiCfg.middlewareAuth(apiCfg.handlerGetUser))))
+	v1Router.Get("/user/:id", makeHttpHandler(apiCfg.logIt(apiCfg.handlerGetUserById)))
+	v1Router.Post("/user", makeHttpHandler(apiCfg.logIt(apiCfg.handlerCreateUser)))
 
-	v1Router.Get("/feeds", makeHttpHandler(apiCfg.middlewareAuth(apiCfg.handlerGetFeedByUserId)))
-	v1Router.Post("/feed", makeHttpHandler(apiCfg.middlewareAuth(apiCfg.handlerFeed)))
+	v1Router.Get("/feeds", makeHttpHandler(apiCfg.logIt(apiCfg.middlewareAuth(apiCfg.handlerGetFeedByUserId))))
+	v1Router.Post("/feed", makeHttpHandler(apiCfg.logIt(apiCfg.middlewareAuth(apiCfg.handlerFeed))))
 
-	v1Router.Get("/feeds/follow", makeHttpHandler(apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollowByUserId)))
-	v1Router.Post("/feed/follow", makeHttpHandler(apiCfg.middlewareAuth(apiCfg.handlerFeedFollow)))
+	v1Router.Get("/feeds/follow", makeHttpHandler(apiCfg.logIt(apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollowByUserId))))
+	v1Router.Post("/feed/follow", makeHttpHandler(apiCfg.logIt(apiCfg.middlewareAuth(apiCfg.handlerFeedFollow))))
 
 	router.Mount("/v1", v1Router)
 

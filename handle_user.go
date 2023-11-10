@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brus-fabrika/rssapi/internal/auth"
 	"github.com/brus-fabrika/rssapi/internal/database"
 	"github.com/google/uuid"
 )
@@ -15,19 +14,8 @@ func (apiCfg *apiConfig) handlerGetUserById(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) error {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		return err
-	}
-
-	user, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		return err
-	}
-
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) error {
 	WriteJson(w, http.StatusOK, user)
-
 	return nil
 }
 

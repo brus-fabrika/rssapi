@@ -5,22 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brus-fabrika/rssapi/internal/auth"
 	"github.com/brus-fabrika/rssapi/internal/database"
 	"github.com/google/uuid"
 )
 
-func (apiCfg *apiConfig) handlerFeedFollow(w http.ResponseWriter, r *http.Request) error {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		return err
-	}
-
-	user, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		return err
-	}
-
+func (apiCfg *apiConfig) handlerFeedFollow(w http.ResponseWriter, r *http.Request, user database.User) error {
 	type feedParameters struct {
 		FeedId uuid.UUID `json:"feed_id"`
 	}
@@ -45,17 +34,7 @@ func (apiCfg *apiConfig) handlerFeedFollow(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-func (apiCfg *apiConfig) handlerGetFeedFollowByUserId(w http.ResponseWriter, r *http.Request) error {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		return err
-	}
-
-	user, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		return err
-	}
-
+func (apiCfg *apiConfig) handlerGetFeedFollowByUserId(w http.ResponseWriter, r *http.Request, user database.User) error {
 	feeds_follow, err := apiCfg.DB.GetFeedsFollowByUserId(r.Context(), user.ID)
 	if err != nil {
 		return err

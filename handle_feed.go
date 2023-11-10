@@ -5,22 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brus-fabrika/rssapi/internal/auth"
 	"github.com/brus-fabrika/rssapi/internal/database"
 	"github.com/google/uuid"
 )
 
-func (apiCfg *apiConfig) handlerGetFeedByUserId(w http.ResponseWriter, r *http.Request) error {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		return err
-	}
-
-	user, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		return err
-	}
-
+func (apiCfg *apiConfig) handlerGetFeedByUserId(w http.ResponseWriter, r *http.Request, user database.User) error {
 	feeds, err := apiCfg.DB.GetFeedsByUserId(r.Context(), user.ID)
 	if err != nil {
 		return err
@@ -31,16 +20,7 @@ func (apiCfg *apiConfig) handlerGetFeedByUserId(w http.ResponseWriter, r *http.R
 	return nil
 }
 
-func (apiCfg *apiConfig) handlerFeed(w http.ResponseWriter, r *http.Request) error {
-	apiKey, err := auth.GetApiKey(r.Header)
-	if err != nil {
-		return err
-	}
-
-	user, err := apiCfg.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		return err
-	}
+func (apiCfg *apiConfig) handlerFeed(w http.ResponseWriter, r *http.Request, user database.User) error {
 
 	type feedParameters struct {
 		Name string `json:"name"`

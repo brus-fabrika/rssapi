@@ -15,7 +15,7 @@ import (
 const createFeed = `-- name: CreateFeed :one
 INSERT INTO feeds (id, name, url, created_at, updated_at, user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, name, url, created_at, updated_at, user_id
+RETURNING id, name, url, created_at, updated_at, user_id, last_fetched_at
 `
 
 type CreateFeedParams struct {
@@ -44,12 +44,13 @@ func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.LastFetchedAt,
 	)
 	return i, err
 }
 
 const getFeedsByUserId = `-- name: GetFeedsByUserId :many
-SELECT id, name, url, created_at, updated_at, user_id FROM feeds
+SELECT id, name, url, created_at, updated_at, user_id, last_fetched_at FROM feeds
 WHERE user_id = $1
 `
 
@@ -69,6 +70,7 @@ func (q *Queries) GetFeedsByUserId(ctx context.Context, userID uuid.UUID) ([]Fee
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserID,
+			&i.LastFetchedAt,
 		); err != nil {
 			return nil, err
 		}

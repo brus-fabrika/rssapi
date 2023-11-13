@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/brus-fabrika/rssapi/internal/database"
 	"github.com/go-chi/chi"
@@ -41,6 +42,13 @@ type apiConfig struct {
 }
 
 func main() {
+
+	feed, err := UrlToFeed("https://feeds.nos.nl/jeugdjournaal")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(feed)
 
 	// Get the PORT environment variable
 	godotenv.Load(".env")
@@ -100,6 +108,8 @@ func (apiCfg *apiConfig) Run() {
 
 	// Start the server
 	log.Println("Starting server on port", apiCfg.Port)
+
+	startScraping(apiCfg.DB, 1, time.Second*10)
 
 	err := srv.ListenAndServe()
 	if err != nil {

@@ -11,12 +11,13 @@ import (
 )
 
 type Feed struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Url       string    `json:"url"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	UserID    uuid.UUID `json:"user_id"`
+	ID            uuid.UUID `json:"id"`
+	Name          string    `json:"name"`
+	Url           string    `json:"url"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	UserID        uuid.UUID `json:"user_id"`
+	LastFetchedAt time.Time `json:"last_fetched_at"`
 }
 
 type FeedsFollow struct {
